@@ -10,7 +10,15 @@
   command: oinkmaster -o /etc/suricata/rules
   when: configure_oinkmaster|changed
 
-- name: ensure suriciate is configured to use oinkmaster-provided rules
+- name: ensure suricata is configured to use nfqueue
+  lineinfile:
+    dest: /etc/init.d/suricata
+    regexp: "^LISTENMODE=.*"
+    line: "LISTENMODE=nfqueue"
+    state: present
+  register: configure_suricata_init
+
+- name: ensure suricata is configured to use oinkmaster-provided rules
   lineinfile:
     dest: /etc/suricata/suricata.yaml
     regexp: "^{{ item.key }}:.*"
@@ -27,4 +35,4 @@
   service:
     name: suricata
     state: restarted
-  when: configure_suricata|changed
+  when: configure_suricata_init|changed or configure_suricata|changed

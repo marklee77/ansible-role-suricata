@@ -27,7 +27,7 @@
 - name: patch suricata init to work with recent kernels
   lineinfile:
     dest: /etc/init.d/suricata
-    regex: "^if [ ! -e /proc/net/netfilter/nf_queue ]; then"
+    regexp: "^if [ ! -e /proc/net/netfilter/nf_queue ]; then"
     line: "if [ ! -e /proc/net/netfilter/nfnetlink_queue ]; then"
     state: present
 
