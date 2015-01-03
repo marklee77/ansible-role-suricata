@@ -4,3 +4,27 @@
     dest: /etc/oinkmaster.conf
     line: url = http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz
     state: present
+  register: configure_oinkmaster
+
+- name: download rules with oinkmaster
+  command: oinkmaster -o /etc/suricata/rules
+  when: configure_oinkmaster|changed
+
+- name: ensure suriciate is configured to use oinkmaster-provided rules
+  lineinfile:
+    dest: /etc/suricata/suricata.yaml
+    regexp: "^{{ item.key }}:.*"
+    line: "{{ item.key }}: {{ item.value }}"
+    state: present
+  register: configure_suricata
+  with_items:
+    - { key: classification-file, 
+        value: /etc/suricata/rules/classification.config }
+    - { key: reference-config-file, 
+        value: /etc/suricata/rules/reference.config }
+
+- name: restart suricata on configuration change
+  service:
+    name: suricata
+    state: restarted
+  when: configure_suricata|changed

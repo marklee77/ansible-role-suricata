@@ -1,5 +1,5 @@
 ---
-- name: ensure mariadb dependency packages are installed
+- name: ensure suricata dependency packages are installed
   apt: 
     pkg: "{{ item }}"
     state: latest 
@@ -23,3 +23,11 @@
     cache_valid_time: 600
   with_items:
     - suricata
+
+- name: patch suricata init to work with recent kernels
+  lineinfile:
+    dest: /etc/init.d/suricata
+    regex: "^if [ ! -e /proc/net/netfilter/nf_queue ]; then"
+    line: "if [ ! -e /proc/net/netfilter/nfnetlink_queue ]; then"
+    state: present
+
