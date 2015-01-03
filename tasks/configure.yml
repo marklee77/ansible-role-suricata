@@ -12,7 +12,7 @@
 
 - name: ensure suricata is configured to use nfqueue
   lineinfile:
-    dest: /etc/init.d/suricata
+    dest: /etc/default/suricata
     regexp: "^LISTENMODE=.*"
     line: "LISTENMODE=nfqueue"
     state: present
@@ -30,6 +30,17 @@
         value: /etc/suricata/rules/classification.config }
     - { key: reference-config-file, 
         value: /etc/suricata/rules/reference.config }
+
+- name: ensure the nfnetlink_queue module is loaded at boot time
+  lineinfile:
+    dest: /etc/modules
+    line: nfnetlink_queue
+    state: present
+  register: nfnetlink_load_module
+
+- name: load the nfnetlink_queue module if necessary
+  command: modprobe nfnetlink_queue
+  when: nfnetlink_load_module|changed
 
 - name: restart suricata on configuration change
   service:
